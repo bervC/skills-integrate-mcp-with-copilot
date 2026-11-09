@@ -4,6 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  function isRegistrationClosed(deadline) {
+    if (!deadline) {
+      return false;
+    }
+
+    const deadlineDate = new Date(`${deadline}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return deadlineDate < today;
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -20,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft =
           details.max_participants - details.participants.length;
+        const registrationClosed = isRegistrationClosed(
+          details.registration_deadline
+        );
 
         // Create participants HTML with delete icons instead of bullet points
         const participantsHTML =
@@ -41,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
+          ${details.registration_deadline ? `<p><strong>Registration deadline:</strong> ${details.registration_deadline}</p>` : ""}
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-container">
             ${participantsHTML}
@@ -52,7 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // Add option to select dropdown
         const option = document.createElement("option");
         option.value = name;
-        option.textContent = name;
+        option.textContent = registrationClosed ? `${name} (registration closed)` : name;
+        option.disabled = registrationClosed;
         activitySelect.appendChild(option);
       });
 

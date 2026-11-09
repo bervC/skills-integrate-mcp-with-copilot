@@ -5,6 +5,8 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
+from datetime import date
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -32,6 +34,13 @@ activities = {
         "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
         "max_participants": 20,
         "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
+    },
+    "GitHub Skills": {
+        "description": "Learn practical coding and collaboration skills through GitHub Skills",
+        "schedule": "To be announced",
+        "registration_deadline": "2026-11-13",
+        "max_participants": 20,
+        "participants": []
     },
     "Gym Class": {
         "description": "Physical education and sports activities",
@@ -97,6 +106,13 @@ def signup_for_activity(activity_name: str, email: str):
 
     # Get the specific activity
     activity = activities[activity_name]
+
+    registration_deadline = activity.get("registration_deadline")
+    if registration_deadline and date.today() > date.fromisoformat(registration_deadline):
+        raise HTTPException(
+            status_code=400,
+            detail="Registration deadline has passed"
+        )
 
     # Validate student is not already signed up
     if email in activity["participants"]:
